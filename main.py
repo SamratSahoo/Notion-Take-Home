@@ -9,24 +9,19 @@ if __name__ == "__main__":
     load_dotenv()
     database_client = DatabaseClient(
         os.environ["DATABASE_ID"],
-        os.environ["PAGE_ID"],
         DATABASE_COLUMNS,
-        test_mode=True,
     )
 
     database_client.notion_clear_database()
 
     csv_processor = CSVProcessor("data/ratings.csv")
 
-    for key in csv_processor.name_to_count:
-        database_client.notion_add_row(
-            {
-                DATABASE_COLUMNS[0].column_name: key,
-                DATABASE_COLUMNS[
-                    1
-                ].column_name: csv_processor.get_average_rating_by_book_name(key),
-                DATABASE_COLUMNS[
-                    2
-                ].column_name: csv_processor.get_favorites_by_book_name(key),
-            }
-        )
+    # Reverse sorting for deterministic outputs
+    for key in sorted(
+        [str(dict_key) for dict_key in csv_processor.name_to_count.keys()], reverse=True
+    ):
+        row = {
+            column.column_name: column.csv_processor_function(csv_processor, key)
+            for column in DATABASE_COLUMNS
+        }
+        database_client.notion_add_row(row)
