@@ -1,7 +1,7 @@
 
 <h1 align="center">Notion Take Home Assessment</h1>
 
-Hello! Thank you for taking some time to go through my Notion Take Home assessment. I've gone ahead and delineated the different parts of my project along with some other information below. A video demo of the project can be found in the `demo.mp4` file. Hope you enjoy!
+Hello! Thank you for taking some time to go through my Notion Take Home assessment. I've gone ahead and delineated the different parts of my project along with some other information below. A video demo of the project can be found in the `demo.mp4` file and the resulting database can be found [here](https://boiling-cub-9b8.notion.site/ba922e9b5a1542eebb6cc6af2bb0ca53?v=e42ec8a79a4f4e3c8aa09c2bbd6a725e&pvs=4). Hope you enjoy!
 
 <p align="center">
   <a href="#project-structure">Project Structure</a> &#xa0; | &#xa0;
