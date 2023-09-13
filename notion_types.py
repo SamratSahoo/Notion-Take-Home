@@ -146,9 +146,6 @@ class DatabaseClient:
         for page in all_pages:
             self.client.pages.update(page["id"], archived=True)
 
-    def import_csv(self):
-        self.notion_clear_database()
-
     def __construct_action_payload(self, action: DatabaseActions, payload):
         if action == DatabaseActions.ADD_COLUMN:
             assert isinstance(payload, DatabaseColumn)
@@ -169,7 +166,6 @@ class DatabaseClient:
             return {payload: None}
 
         if action == DatabaseActions.INSERT_ROW:
-            # assert isinstance(payload, type(dict))
             input_payload = {}
             for column in self.columns:
                 input_value = payload[column.column_name]
