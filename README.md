@@ -24,7 +24,7 @@ This project comes with two major modules and aims to keep the codebase as decla
 **Project Structure:**
 * **Entrypoint:** The core of this project's functionality can be invoked through the `main.py` file which will initialize the database client, CSV processor, and add columns + rows to the database.
 * **Testing:** This project comes with a basic suite of tests (found in `tests/`), testing both the database client and the CSV processor. These tests can be invoked via the `tests.py` file.
-* **Data:** The data for this project is kept in the `data/` directory. This project has both the notion provided data (`data/ratings.csv`) as well as a smaller subset of that data (`data/sample.csv`)
+* **Data:** The data for this project is kept in the `data/` directory. This project has both the notion provided data (`data/ratings.csv`) as well as a smaller subset of that data (`data/sample.csv`) for testing purposes.
 * **Config:** As an attempt to keep the codebase as elegant as possible, it follows a declarative coding style. The `notion_types.py` and `config.py` provide some of the classes & config variables we parse throughout the application.
 
 ## Setup ##

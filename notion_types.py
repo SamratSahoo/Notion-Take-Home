@@ -76,7 +76,6 @@ class Sanitizers:
 
 class DatabaseActions(enum.Enum):
     ADD_COLUMN = "add column"
-    GET_ALL_COLUMNS = "get all columns"
     INSERT_ROW = "insert row"
     REMOVE_COLUMN = "remove column"
 
@@ -84,6 +83,9 @@ class DatabaseActions(enum.Enum):
 class DatabaseClient:
     """A database client to easily interact with a specified notion database"""
 
+    # Edge Case Consideration: When initializing the database client, it would be good to have
+    # additional checks to ensure that the database actually exists before executing any further code
+    # This way we can catch these errors early on and give better error messages to the user
     def __init__(
         self,
         database_id: str,
@@ -140,6 +142,8 @@ class DatabaseClient:
 
         return properties
 
+    # Edge Case Consideration: Additional sanitation for the database column names may be useful - for example if the
+    # column name is too long Notion API may error out from a body size that is too large.
     def notion_create_database_column(self, column: DatabaseColumn) -> None:
         """Creates a database column based on a database column object
 
@@ -161,6 +165,10 @@ class DatabaseClient:
                 f"Failed to create database column for database: {self.database_id}"
             )
 
+    # Edge Case Consideration: I do not handle this because we can be sure that the data is not malformed
+    # However it is possible in a more realisitc setting that someone passes incomplete data to the CSV
+    # We will want to add additional checks to ensure that we either add an incomplete row correctly or
+    # warn the user that an incomplete row is being added
     def notion_add_row(self, data: type(dict)) -> None:
         """Creates a database row based on an object
 
@@ -218,6 +226,9 @@ class DatabaseClient:
                     f"Failed to archive page for database: {self.database_id}"
                 )
 
+    # Additional Edge Case Consideration: Because obtains all the database rows in a paginated manner via multiple requests
+    # it may be smart to have additional retry logic in case one of the requests fails. Else, we would just end up with an
+    # incomplete list of rows.
     def notion_get_rows(self):
         """Gets all rows in the notion database
 

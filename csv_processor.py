@@ -3,6 +3,9 @@ from notion_types import Sanitizers
 
 
 class CSVProcessor:
+    # Edge Case Consideration: This has not been included because the assignment gave us confidence in a properly formatted
+    # CSV, however, having stronger santiation and parsing mechanisms would be beneficial for edge cases where users input
+    # malformed data
     def __init__(self, csv_path: str) -> None:
         """Creates an instance of a CSV Processor and processes the contents from a file
 
