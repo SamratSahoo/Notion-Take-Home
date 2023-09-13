@@ -1,7 +1,7 @@
 
 <h1 align="center">Notion Take Home Assessment</h1>
 
-Hello! Thank you for taking some time to go through my Notion Take Home assessment. I've gone ahead and delineated the different parts of my project along with some other information below. Hope you enjoy!
+Hello! Thank you for taking some time to go through my Notion Take Home assessment. I've gone ahead and delineated the different parts of my project along with some other information below. A video demo of the project can be found in the `demo.mp4` file. Hope you enjoy!
 
 <p align="center">
   <a href="#project-structure">Project Structure</a> &#xa0; | &#xa0;
@@ -18,7 +18,7 @@ Hello! Thank you for taking some time to go through my Notion Take Home assessme
 This project comes with two major modules and aims to keep the codebase as declarative as possible.
 
 **Major Modules:**
-* **CSVProcessor Module:** As its name might suggest, this module was built for the sole purpose of processing the `data/ratings.csv` file. It is module specifically designed to parse the CSV file and gather any necessary information for our use case (i.e. average ratings or number of favorites). If the CSV file were to differ or the information we want to obtain differed, then the processor module would have a custom implementation. 
+* **CSVProcessor Module:** As its name might suggest, this module was built for the sole purpose of processing the `data/ratings.csv` file. It is a module specifically designed to parse the CSV file and gather any necessary information for our use case (i.e. average ratings or number of favorites). If the CSV file were to differ or the information we want to obtain differed, then the processor module would have a custom implementation. 
 * **DatabaseClient Module:** This module is a wrapper module around the Python `notion-client` SDK. It abstracts away basic notion database functionality (i.e. creating a column or adding a row). There is a sister `DatabaseColumn` module that this module is designed to interface with.
 
 **Project Structure:**
@@ -81,7 +81,7 @@ A couple of libraries were key to this project:
 
 ## Reflection ##
 
-This assignment was a really interesting assignment and I would say it really helped me both become a bit better with the way I right code while also enabling me to learn more about Notion!
+This assignment was a really interesting assignment and I would say it really helped me both become a bit better with the way I write code while also enabling me to learn more about Notion!
 
 ### Challenges ###
 
@@ -123,7 +123,7 @@ After reading through some of the source code, I came to the conclusion that the
 ### Notion API Documentation Feedback ###
 
 The Notion API documentation was quite thorough and well written! However I believe there are a couple areas of improvement:
-* **Examples:** I am someone who learns best by reading examples of code - while there were some examples of requests in the API, I think I would have been able to work far faster if there were more examples in the docs. As it stands, the number of examples in the docs does cover the breadth of the capabilities of the API.
+* **Examples:** I am someone who learns best by reading examples of code - while there were some examples of requests in the docs, I think I would have been able to work far faster if there were more examples in the docs. As it stands, the number of examples in the docs does not cover the breadth of the capabilities of the API.
 * **Organization:** The organization of the Notion API docs is intuitive but because of the nature of how the API is used, it can get quite messy from a developer's perspective. For instance, in order to make one API call, I might have open 3 or 4 tabs because there are so many types of objects and attributes I need to keep note of. Having some way to have multiple pages of the docs open on one screen might make the docs easier to navigate. 
 * **Notion Glossary:** Going off the last point, because there are so many definitions in Notion, I think having a Glosssary of some sorts with all the object defitions, attribute definitions, etc. would be extremely useful. The centralization of these resources would ensure that developers can find the things they care about most a lot faster. 
 
