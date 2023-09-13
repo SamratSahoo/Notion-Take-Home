@@ -4,28 +4,34 @@ from dotenv import load_dotenv
 import os
 
 
-class NotionType(enum.Enum):
-    TEXT = "text"
+class NotionType(str, enum.Enum):
+    TEXT = "rich_text"
     NUMBER = "number"
+    TITLE = "title"
 
 
-class NotionResponseObject(enum.Enum):
+class NotionResponseObject(str, enum.Enum):
     ERROR = "error"
     DATABASE = "database"
 
 
 class DatabaseColumn:
-    def __init__(self, column_name: str, column_type: str, sanatizers=[]) -> None:
+    def __init__(
+        self, column_name: str, column_type: str, sanatizers=[], is_primary=False
+    ) -> None:
         self.column_name = column_name
         self.column_type = column_type
         self.sanatizers = sanatizers
+        self.is_primary = is_primary
 
 
 class Sanatizers:
-    def clear_white_space(self, input_value: str) -> str:
+    @staticmethod
+    def clear_white_space(input_value: str) -> str:
         return input_value.strip()
 
-    def clear_capitalization(self, input_value: str) -> str:
+    @staticmethod
+    def clear_capitalization(input_value: str) -> str:
         return input_value.lower()
 
 
@@ -33,17 +39,19 @@ class DatabaseActions(enum.Enum):
     ADD_COLUMN = "add column"
     GET_ALL_COLUMNS = "get all columns"
     INSERT_ROW = "insert row"
-
-
-"""
-
-"""
+    REMOVE_COLUMN = "remove column"
 
 
 class DatabaseClient:
     """A database client to easily interact with a specified notion database"""
 
-    def __init__(self, database_id: str, columns: "list[DatabaseColumn]") -> None:
+    def __init__(
+        self,
+        database_id: str,
+        page_id: str,
+        columns: "list[DatabaseColumn]",
+        test_mode=False,
+    ) -> None:
         """Initializes a database client based on the database id and columns.
         Will add columns to the notion database if they do not exist already.
         Will remove columns that are not intended to be in the database.
@@ -51,23 +59,27 @@ class DatabaseClient:
         Args:
             database_id (str): Id of database to interact with
             columns (list[DatabaseColumn]): List of columns we want to
+            test_mode (bool): Whether or not we want to use the database in testing mode
         """
         load_dotenv()
         self.client = Client(auth=os.environ["NOTION_TOKEN"])
         self.database_id = database_id
+        self.page_id = page_id
         self.columns = columns
-        self.notion_column_keys = self.__notion_get_all_column_keys()
+        self.notion_column_keys = self.notion_get_all_column_keys()
+        self.test_mode = test_mode
 
-        intended_column_keys = set([column.column_name for column in self.columns])
-        for key in self.notion_column_keys:
-            if key not in intended_column_keys:
-                self.__notion_remove_database_column(key)
+        if not test_mode:
+            intended_column_keys = set([column.column_name for column in self.columns])
+            for key in self.notion_column_keys:
+                if key not in intended_column_keys:
+                    self.notion_create_database_column(key)
 
-        for column in self.columns:
-            if column.column_name not in self.notion_column_keys:
-                self.__notion_create_database_column(column)
+            for column in self.columns:
+                if column.column_name not in self.notion_column_keys:
+                    self.notion_create_database_column(column)
 
-    def __notion_get_all_column_keys(self) -> "set[str]":
+    def notion_get_all_column_keys(self) -> "set[str]":
         """
         Gets all column keys that have been added into the notion database.
 
@@ -91,36 +103,89 @@ class DatabaseClient:
 
         return properties
 
-    def __notion_create_database_column(self, column: DatabaseColumn) -> None:
+    def notion_create_database_column(self, column: DatabaseColumn) -> None:
         self.client.databases.update(
             self.database_id,
-            self.__construct_action_payload(DatabaseActions.ADD_COLUMN, column),
+            properties=self.__construct_action_payload(
+                DatabaseActions.ADD_COLUMN, column
+            ),
         )
 
-    def __notion_add_row() -> None:
-        pass
+    def notion_add_row(self, data: type(dict)) -> None:
+        self.client.pages.create(
+            properties=self.__construct_action_payload(
+                DatabaseActions.INSERT_ROW, data
+            ),
+            parent={"type": "database_id", "database_id": self.database_id},
+        )
 
-    def __notion_remove_database_column(self, column_key: str) -> None:
-        pass
+    def notion_remove_database_column(self, column_key: str) -> None:
+        self.client.databases.update(
+            self.database_id,
+            properties=self.__construct_action_payload(
+                DatabaseActions.REMOVE_COLUMN, column_key
+            ),
+        )
 
-    def __notion_clear_database() -> None:
-        pass
+    def notion_clear_database(self) -> None:
+        cursor = None
+        page_size = 100
+        all_pages = []
+        while True:
+            pages = self.client.databases.query(
+                self.database_id, start_cursor=cursor, page_size=page_size
+            )
+
+            all_pages.extend(pages["results"])
+
+            if "has_more" not in pages or not pages["has_more"]:
+                break
+
+            cursor = pages["next_cursor"]
+
+        for page in all_pages:
+            self.client.pages.update(page["id"], archived=True)
 
     def import_csv(self):
-        pass
+        self.notion_clear_database()
 
     def __construct_action_payload(self, action: DatabaseActions, payload):
         if action == DatabaseActions.ADD_COLUMN:
             assert isinstance(payload, DatabaseColumn)
+
+            if payload.is_primary:
+                return {"title": {"name": payload.column_name}}
+
             return {
-                "properties": {
-                    payload.column_name: {
-                        "id": payload.column_name.lower(),
-                        "type": payload.column_type,
-                        "name": payload.column_name,
-                    }
+                payload.column_name: {
+                    "id": payload.column_name.lower(),
+                    "name": payload.column_name,
+                    payload.column_type: {},
                 }
             }
 
+        if action == DatabaseActions.REMOVE_COLUMN:
+            assert isinstance(payload, str)
+            return {payload: None}
+
         if action == DatabaseActions.INSERT_ROW:
-            pass
+            # assert isinstance(payload, type(dict))
+            input_payload = {}
+            for column in self.columns:
+                input_value = payload[column.column_name]
+                for sanitizer in column.sanatizers:
+                    input_value = sanitizer(input_value)
+
+                if column.column_type == NotionType.NUMBER:
+                    input_payload[column.column_name] = {
+                        column.column_type.value: input_value
+                    }
+                elif (
+                    column.column_type == NotionType.TEXT
+                    or column.column_type == NotionType.TITLE
+                ):
+                    input_payload[column.column_name] = {
+                        column.column_type.value: [{"text": {"content": input_value}}]
+                    }
+
+            return input_payload
